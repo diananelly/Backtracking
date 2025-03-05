@@ -1,126 +1,71 @@
-import random
-class TrieNode:
-    def __init__(self):
-        self.children = {}
-        self.is_end_of_word = False
+def find_words_in_grid(grid, words):
+    rows, cols = len(grid), len(grid[0])
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+    result = []
 
+    def is_valid(x, y):
+        return 0 <= x < rows and 0 <= y < cols
 
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
-
-    def insert(self, word):
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-        node.is_end_of_word = True
-
-    def starts_with(self, prefix):
-        node = self.root
-        for char in prefix:
-            if char not in node.children:
-                return False
-            node = node.children[char]
-        return True
-
-
-def find_words(board, words):
-    def backtrack(board, node, i, j, path, result):
-        # If the current path is a valid word, add to the result
-        if node.is_end_of_word:
-            result.add(path)
+    def backtrack(x, y, word, index, visited):
+        # If we reach the length of the word, we've found it
+        if index == len(word):
+            return True
 
         # Mark the current cell as visited
-        temp, board[i][j] = board[i][j], '#'
+        visited.add((x, y))
 
-        # Explore the 4 possible directions
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        for di, dj in directions:
-            ni, nj = i + di, j + dj
-            if 0 <= ni < len(board) and 0 <= nj < len(board[0]) and board[ni][nj] != '#':
-                char = board[ni][nj]
-                if char in node.children:
-                    backtrack(board, node.children[char], ni, nj, path + char, result)
+        # Try all 4 directions
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if is_valid(nx, ny) and (nx, ny) not in visited and grid[nx][ny] == word[index]:
+                if backtrack(nx, ny, word, index + 1, visited):
+                    return True
 
-        # Unmark the current cell as visited
-        board[i][j] = temp
+        # Backtrack (unmark the current cell)
+        visited.remove((x, y))
+        return False
 
-    # Insert all words into a Trie
-    trie = Trie()
+    # For each word, try to find it starting from each cell in the grid
     for word in words:
-        trie.insert(word)
+        found = False
+        for i in range(rows):
+            for j in range(cols):
+                if grid[i][j] == word[0]:  # Only start if the first letter matches
+                    visited = set()
+                    if backtrack(i, j, word, 1, visited):
+                        result.append(word)  # Word found
+                        found = True
+                        break
+            if found:
+                break
 
-    result = set()
-    for i in range(len(board)):
-        for j in range(len(board[0])):
-            char = board[i][j]
-            if char in trie.root.children:
-                backtrack(board, trie.root.children[char], i, j, char, result)
+    return result
 
-    return list(result)
-
-
-# Example usage
-def create_board(words, size=15):
-    # Initialize an empty board with placeholders (e.g., '.')
-    board = [['.' for _ in range(size)] for _ in range(size)]
-
-    def place_word(word):
-        word_len = len(word)
-
-        # Try to place the word randomly
-        placed = False
-        while not placed:
-            direction = random.choice(['horizontal', 'vertical'])
-
-            if direction == 'horizontal':
-                row = random.randint(0, size - 1)
-                col = random.randint(0, size - word_len)
-
-                # Check if the word fits without overlapping
-                if all(board[row][col + i] == '.' for i in range(word_len)):
-                    for i in range(word_len):
-                        board[row][col + i] = word[i]
-                    placed = True
-            else:
-                row = random.randint(0, size - word_len)
-                col = random.randint(0, size - 1)
-
-                # Check if the word fits without overlapping
-                if all(board[row + i][col] == '.' for i in range(word_len)):
-                    for i in range(word_len):
-                        board[row + i][col] = word[i]
-                    placed = True
-
-    # Place all words on the board
-    for word in words:
-        place_word(word)
-
-    return board
-
-
-def print_board(board):
-    for row in board:
-        print(" ".join(row))
-
-
-# List of words to place on the board
-words = [
-    "algorithm", "tendency", "backtracking", "greedy", "manhattan",
-    "memoization", "programming", "optimization", "dynamic", "search"
+# Sample 15x15 grid (you would replace this with the actual grid)
+grid = [
+    ["a", "l", "g", "o", "r", "i", "t", "h", "m", "q", "w", "e", "r", "t", "y"],
+    ["s", "d", "t", "e", "n", "d", "e", "n", "c", "y", "r", "s", "s", "h", "b"],
+    ["r", "e", "p", "b", "a", "c", "k", "t", "r", "a", "c", "k", "i", "n", "g"],
+    ["p", "y", "d", "e", "e", "r", "g", "s", "t", "a", "r", "l", "f", "o", "o"],
+    ["m", "a", "n", "h", "a", "t", "t", "a", "n", "n", "h", "j", "v", "c", "x"],
+    ["m", "e", "m", "o", "i", "z", "a", "t", "i", "o", "n", "h", "b", "n", "k"],
+    ["p", "r", "o", "g", "r", "a", "m", "m", "i", "n", "g", "a", "v", "d", "y"],
+    ["o", "p", "t", "i", "m", "i", "z", "a", "t", "i", "o", "n", "u", "s", "v"],
+    ["d", "n", "n", "a", "m", "i", "c", "r", "u", "p", "w", "a", "b", "h", "a"],
+    ["s", "i", "p", "r", "c", "h", "g", "b", "d", "e", "t", "e", "o", "p", "c"],
+    ["e", "c", "r", "t", "o", "u", "y", "g", "s", "v", "b", "h", "n", "m", "i"],
+    ["a", "d", "f", "a", "d", "b", "w", "z", "y", "t", "l", "v", "f", "k", "m"],
+    ["r", "g", "w", "r", "e", "r", "u", "s", "t", "p", "v", "q", "h", "c", "a"],
+    ["c", "n", "m", "r", "l", "a", "z", "w", "q", "m", "a", "g", "d", "y", "n"],
+    ["h", "k", "e", "l", "v", "m", "h", "r", "c", "w", "s", "t", "a", "v", "y"],
+    ["v", "p", "o", "g", "l", "d", "w", "c", "o", "p", "r", "m", "s", "e", "d"]
 ]
-
-# Create the board
-board = create_board(words)
-
-# Print the board
-print_board(board)
 
 words = [
     "algorithm", "tendency", "backtracking", "greedy", "manhattan",
     "memoization", "programming", "optimization", "dynamic", "search"
 ]
 
-print(find_words(board, words))
+# Finding words in the grid
+found_words = find_words_in_grid(grid, words)
+print(found_words)
