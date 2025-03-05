@@ -41,7 +41,7 @@ def find_words_in_grid(grid, words):
 
     return result
 
-# Sample 15x15 grid (you would replace this with the actual grid)
+# Sample 15x15 grid
 grid = [
     ["a", "l", "g", "o", "r", "i", "t", "h", "m", "q", "w", "e", "r", "t", "y"],
     ["s", "d", "t", "e", "n", "d", "e", "n", "c", "y", "r", "s", "s", "h", "b"],
